@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>知集 (ZhiJi)</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <header class="popup-header">
+      <div class="logo-area">
+        <span class="logo-text">知集</span>
+        <span class="badge">v1.1.0</span>
+      </div>
+      <a href="https://github.com/phpgao/zhiji" target="_blank" class="github-link" title="GitHub 仓库">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      </a>
+    </header>
+
+    <section id="page-status" class="status-card">
+      <div class="status-indicator">
+        <span class="dot" id="status-dot"></span>
+        <span id="status-text">正在探测当前页面...</span>
+      </div>
+      <div id="zhihu-info" class="zhihu-info" style="display: none;">
+        <div id="question-title" class="q-title"></div>
+        <div class="q-meta">
+          <span id="q-mode" class="mode-tag"></span>
+          <span id="q-count" class="count-text"></span>
+        </div>
+        <div class="action-buttons">
+          <button id="btn-toggle-panel" class="primary-btn">打开采集面板</button>
+          <button id="btn-quick-grab" class="secondary-btn">开始采集</button>
+        </div>
+      </div>
+      <div id="non-zhihu-info" class="non-zhihu" style="display: none;">
+        <p>请在知乎问题或回答页面中使用</p>
+        <button id="btn-open-zhihu" class="outline-btn">打开知乎热榜 ↗</button>
+      </div>
+    </section>
+
+    <section class="settings-section">
+      <div class="section-title">⚙️ 偏好设置</div>
+      <div class="form-group">
+        <label>Obsidian Vault (仓库名) <span class="required">*</span></label>
+        <input type="text" id="cfg-vault" placeholder="必填，例如: MyVault">
+        <span class="hint">💡 存入 Obsidian 需指定知识库名称，未配置将无法导出</span>
+      </div>
+      <div class="form-group">
+        <label>保存目录 (Folder)</label>
+        <input type="text" id="cfg-folder" placeholder="可选，留空存入根目录，例如: 60-External/zhihu">
+      </div>
+      <div class="toggle-list">
+        <label class="toggle-item">
+          <span>自动展开折叠回答</span>
+          <input type="checkbox" id="cfg-autoExpand">
+          <span class="slider"></span>
+        </label>
+        <label class="toggle-item">
+          <span>包含问题描述</span>
+          <input type="checkbox" id="cfg-includeDetail">
+          <span class="slider"></span>
+        </label>
+        <label class="toggle-item">
+          <span>提取话题标签</span>
+          <input type="checkbox" id="cfg-includeTags">
+          <span class="slider"></span>
+        </label>
+        <label class="toggle-item">
+          <span>包含回答元数据 (时间/获赞)</span>
+          <input type="checkbox" id="cfg-includeAnswerMeta">
+          <span class="slider"></span>
+        </label>
+        <label class="toggle-item">
+          <span>包含回答评论 (仅单回答)</span>
+          <input type="checkbox" id="cfg-includeComments">
+          <span class="slider"></span>
+        </label>
+        <div class="form-group sub-form-group" style="margin-top: 6px; margin-bottom: 8px;">
+          <label style="font-size: 11px; color: #8888aa;">最大评论条数 (单回答，默认 100)</label>
+          <input type="number" id="cfg-maxComments" min="10" max="1000" step="10" value="100" style="padding: 6px 8px; font-size: 12px;">
+        </div>
+        <div class="form-group sub-form-group" style="margin-top: 6px; margin-bottom: 8px;">
+          <label style="font-size: 11px; color: #8888aa;">最大采集回答数 (多回答模式，0 为不限制)</label>
+          <input type="number" id="cfg-maxAnswers" min="0" max="5000" step="5" value="0" style="padding: 6px 8px; font-size: 12px;">
+        </div>
+        <label class="toggle-item">
+          <span>生成 YAML Frontmatter</span>
+          <input type="checkbox" id="cfg-includeFrontmatter">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <button id="btn-save-cfg" class="save-btn">保存并应用设置</button>
+      <div id="save-msg" class="save-msg" style="display: none;">✅ 配置已保存</div>
+    </section>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

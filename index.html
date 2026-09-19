@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>知集 (ZhiJi) — 知乎高保真内容采集与知识库归档利器</title>
+  <meta name="description" content="知集 (ZhiJi) 是一款专注于高质量沉淀知乎优质内容的浏览器插件/油猴脚本。支持单回答剪藏、多回答批量抓取、专栏文章深度导出，高保真保留公式、代码、图片与多级评论，一键存入 Obsidian。">
+  <link rel="icon" type="image/png" href="./assets/favicon.png">
+  <style>
+    :root {
+      --bg: #0B0F19;
+      --card-bg: rgba(255, 255, 255, 0.04);
+      --card-hover-bg: rgba(255, 255, 255, 0.07);
+      --border: rgba(255, 255, 255, 0.09);
+      --border-hover: rgba(99, 102, 241, 0.4);
+      --text: #F3F4F6;
+      --text-muted: #9CA3AF;
+      --text-dim: #6B7280;
+      --primary: #3B82F6;
+      --primary-hover: #2563EB;
+      --accent-gradient: linear-gradient(135deg, #38BDF8 0%, #6366F1 50%, #A855F7 100%);
+      --emerald: #10B981;
+      --glass: rgba(11, 15, 25, 0.82);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      line-height: 1.6;
+    }
+
+    body {
+      overflow-x: hidden;
+      background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, rgba(11, 15, 25, 0) 70%),
+                  radial-gradient(circle at 10% 30%, rgba(56, 189, 248, 0.08) 0%, rgba(11, 15, 25, 0) 50%);
+      background-attachment: fixed;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Navbar */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: var(--glass);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+    .brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+    }
+    .version-tag {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #A5B4FC;
+      font-weight: 600;
+    }
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+    .nav-links a:hover {
+      color: #FFFFFF;
+      transition: color 0.2s;
+    }
+    .nav-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid transparent;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #2563EB, #4F46E5);
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #1D4ED8, #4338CA);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: var(--card-bg);
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover {
+      background: var(--card-hover-bg);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+    .btn-outline-emerald {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #6EE7B7;
+    }
+    .btn-outline-emerald:hover {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.5);
+      transform: translateY(-1px);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: #D1D5DB;
+      margin-bottom: 24px;
+    }
+    .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10B981;
+      box-shadow: 0 0 8px #10B981;
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+    }
+    .text-gradient {
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      max-width: 740px;
+      margin: 0 auto 36px;
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+    .hero-ctas {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 50px;
+    }
+    .hero-marquee {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(99, 102, 241, 0.15);
+      background: #000;
+    }
+    .hero-marquee img {
+      width: 100%;
+      display: block;
+      height: auto;
+    }
+
+    /* Section Common */
+    .section {
+      padding: 90px 0;
+    }
+    .section-title-wrap {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    .section-tag {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      color: #60A5FA;
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+    .section-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    /* Bento Features Grid */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 32px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .card:hover {
+      background: var(--card-hover-bg);
+      border-color: var(--border-hover);
+      transform: translateY(-3px);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+    }
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .card p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Screenshots Showcase Tab */
+    .showcase-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      border-radius: 999px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active, .tab-btn:hover {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: #FFFFFF;
+    }
+    .tab-content {
+      display: none;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      background: #000;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    .tab-content img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Installation Section */
+    .install-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+    }
+    .install-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .step-list {
+      list-style: none;
+      counter-reset: step-counter;
+      margin: 20px 0 24px;
+    }
+    .step-list li {
+      position: relative;
+      padding-left: 36px;
+      margin-bottom: 14px;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+    .step-list li::before {
+      counter-increment: step-counter;
+      content: counter(step-counter);
+      position: absolute;
+      left: 0;
+      top: 1px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #A5B4FC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .code-snippet {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.85rem;
+      color: #93C5FD;
+      word-break: break-all;
+      margin: 12px 0;
+    }
+
+    /* FAQ Section */
+    .faq-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+    }
+    .faq-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+    }
+    .faq-item h4 {
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+      color: #FFFFFF;
+      font-weight: 600;
+    }
+    .faq-item p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 60px 0 40px;
+      background: rgba(0, 0, 0, 0.3);
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 20px;
+      list-style: none;
+      font-size: 0.95rem;
+    }
+    .footer-links a:hover {
+      color: #FFFFFF;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero { padding: 50px 0 40px; }
+      .bento-grid, .install-grid, .faq-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="nav">
+    <div class="container nav-inner">
+      <a href="#" class="brand">
+        <img src="./assets/logo.png" alt="知集 ZhiJi Logo">
+        <span>知集 (ZhiJi)</span>
+        <span class="version-tag">v1.1.0</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features">功能特性</a></li>
+        <li><a href="#showcase">界面演示</a></li>
+        <li><a href="#install">安装指南</a></li>
+        <li><a href="#obsidian">Obsidian 配置</a></li>
+        <li><a href="#faq">常见问题</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="https://github.com/phpgao/zhiji" target="_blank" class="btn btn-secondary">
+          <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="pill">
+        <span class="pill-dot"></span>
+        <span>知集 v1.1.0 正式发布 · 支持知乎专栏与问答双场景高保真采集</span>
+      </div>
+      <h1>知乎内容采集与<br><span class="text-gradient">高保真知识库归档利器</span></h1>
+      <p>一键将知乎回答与专栏文章精准转化为高规范 Markdown。完美支持 LaTeX 数学公式、代码高亮、高清配图、多级评论捕获、Obsidian 本地零感直存与离线 ZIP 归档。</p>
+      
+      <div class="hero-ctas">
+        <a href="https://github.com/phpgao/zhiji/releases/download/v1.1.0/zhiji-chrome-v1.1.0.zip" class="btn btn-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>下载 Chrome 扩展包 (v1.1.0)</span>
+        </a>
+        <a href="https://raw.githubusercontent.com/phpgao/zhiji/main/zhiji.user.js" class="btn btn-secondary" target="_blank">
+          <span>🐒 一键安装油猴脚本</span>
+        </a>
+        <a href="https://greasyfork.org/" target="_blank" class="btn btn-outline-emerald">
+          <span>🍴 Greasy Fork 安装</span>
+        </a>
+      </div>
+
+      <div class="hero-marquee">
+        <img src="./assets/screenshots/promo-marquee-1400x560.png" alt="知集宣传全景图" loading="lazy">
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Features Bento Grid -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-title-wrap">
+        <div class="section-tag">Features</div>
+        <h2 class="section-title">全方位为知识管理而生</h2>
+        <p class="section-subtitle">告别杂乱的网页格式碎片，知集让优质答案与干货长文以最纯粹的排版进入你的第二大脑。</p>
+      </div>
+
+      <div class="bento-grid">
+        <div class="card">
+          <div class="card-icon">🎯</div>
+          <h3>双场景高精度解析</h3>
+          <p>无论知乎问答（单回答精准采集 / 多回答批量扫描）还是专栏长文（/p/*），均能精准隔离正文，自动剥离侧边栏、推荐阅读与热搜干扰。</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">📐</div>
+          <h3>LaTeX 公式与代码高亮</h3>
+          <p>将行内与块级公式转换为标准 KaTeX 格式（$ 与 $$），识别代码语言标识，知乎卡片链接与 GFM 表格原生还原。</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">💬</div>
+          <h3>多级评论深度捕获</h3>
+          <p>自动滚动加载评论，精准还原「A 回复 B」的层级关系，支持作者徽章标识、点赞统计，知乎专有表情自动转为文本说明。</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">💎</div>
+          <h3>Obsidian 原生协议直存</h3>
+          <p>基于官方原生 obsidian://new 协议唤起，零第三方插件依赖，无需申请任何 Token 或开启本地端口，一键直接写入指定知识库。</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">📦</div>
+          <h3>离线本地图片 ZIP 打包</h3>
+          <p>自动下载原图并保存至本地 images/ 文件夹，将文档内的图链重写为相对路径。即便知乎原帖或图片被删，归档依旧完整。</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🎛️</div>
+          <h3>无侵入悬浮胶囊与可视化配置</h3>
+          <p>右下角轻量化交互胶囊，不侵占知乎原有阅读空间。内置可视化设置弹窗，评论抓取数量、图片打包、Obsidian 参数实时热生效。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Visual Showcase Gallery -->
+  <section class="section" id="showcase">
+    <div class="container">
+      <div class="section-title-wrap">
+        <div class="section-tag">Showcase</div>
+        <h2 class="section-title">界面与实机演示</h2>
+        <p class="section-subtitle">纯纯的原生沉浸交互体验，所见即所得的整洁排版。</p>
+      </div>
+
+      <div class="showcase-tabs">
+        <button class="tab-btn active" onclick="switchTab(0)">🧩 悬浮交互与剪藏面板</button>
+        <button class="tab-btn" onclick="switchTab(1)">💬 评论嵌套与层级解析</button>
+        <button class="tab-btn" onclick="switchTab(2)">💎 Obsidian 直连与导出效果</button>
+      </div>
+
+      <div class="tab-content active" id="tab-0">
+        <img src="./assets/screenshots/screenshot-1-clipping.png" alt="悬浮交互与剪藏面板" loading="lazy">
+      </div>
+      <div class="tab-content" id="tab-1">
+        <img src="./assets/screenshots/screenshot-2-comments.png" alt="评论嵌套与层级解析" loading="lazy">
+      </div>
+      <div class="tab-content" id="tab-2">
+        <img src="./assets/screenshots/screenshot-3-obsidian-export.png" alt="Obsidian 直连与导出效果" loading="lazy">
+      </div>
+    </div>
+  </section>
+
+  <!-- Installation Guide -->
+  <section class="section" id="install">
+    <div class="container">
+      <div class="section-title-wrap">
+        <div class="section-tag">Quick Start</div>
+        <h2 class="section-title">极速安装上手</h2>
+        <p class="section-subtitle">支持主流浏览器扩展或 Tampermonkey 油猴脚本，只需 1 分钟即可开启采集。</p>
+      </div>
+
+      <div class="install-grid">
+        <div class="install-card">
+          <div>
+            <h3>Chrome 扩展安装 (MV3)</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 6px;">支持 Chrome / Edge / Brave / Arc 等基于 Chromium 的现代浏览器。</p>
+            <ol class="step-list">
+              <li>前往 Releases 下载 <code>zhiji-chrome-v1.1.0.zip</code> 并在本地解压；</li>
+              <li>在浏览器地址栏打开 <code>chrome://extensions/</code>；</li>
+              <li>开启右上角的 <strong>「开发者模式」</strong> 开关；</li>
+              <li>点击左上角 <strong>「加载已解压的扩展程序」</strong>，选择解压出的文件夹即可。</li>
+            </ol>
+          </div>
+          <a href="https://github.com/phpgao/zhiji/releases" target="_blank" class="btn btn-primary" style="width: 100%;">
+            前往 Releases 下载
+          </a>
+        </div>
+
+        <div class="install-card">
+          <div>
+            <h3>Tampermonkey 油猴脚本</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 6px;">适合已安装 Tampermonkey / ScriptCat / Violentmonkey 的用户。</p>
+            <ol class="step-list">
+              <li>确认浏览器已安装油猴扩展（Tampermonkey）；</li>
+              <li>点击下方安装按钮，浏览器将自动弹出脚本安装确认窗口；</li>
+              <li>点击 <strong>「安装」</strong> 确认；</li>
+              <li>打开任意知乎回答或专栏页面刷新，右下角即刻出现知集悬浮球。</li>
+            </ol>
+          </div>
+          <a href="https://raw.githubusercontent.com/phpgao/zhiji/main/zhiji.user.js" target="_blank" class="btn btn-secondary" style="width: 100%;">
+            点击直接安装 zhiji.user.js
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Obsidian Setup -->
+  <section class="section" id="obsidian">
+    <div class="container">
+      <div class="section-title-wrap">
+        <div class="section-tag">Integration</div>
+        <h2 class="section-title">Obsidian 原生直连，零插件与 Token 门槛</h2>
+        <p class="section-subtitle">基于 Obsidian 官方原生 URI 协议（obsidian://new），无需安装任何第三方插件或申请密钥。</p>
+      </div>
+
+      <div class="card" style="max-width: 800px; margin: 0 auto;">
+        <ol class="step-list" style="margin: 0;">
+          <li>
+            <strong>打开知集设置面板</strong><br>
+            在知乎页面点击知集悬浮胶囊右侧的 <strong>「⚙️ 设置」按钮</strong>（或浏览器右上角插件图标）。
+          </li>
+          <li>
+            <strong>填写知识库名称 (Vault)</strong><br>
+            只需填入您正在使用的 Obsidian 仓库名（例如 <code>MyNotes</code>），并可选填写归档子文件夹（例如 <code>zhihu/</code>）：
+            <div class="code-snippet">
+              Obsidian 仓库名 (Vault): MyNotes （必填，对应你的 Obsidian 库名）<br>
+              保存文件夹 (Folder): zhihu/ （选填，留空则存入根目录）
+            </div>
+          </li>
+          <li>
+            <strong>点击「存入 Obsidian」一键写入</strong><br>
+            点击后浏览器将直接唤起本地 Obsidian，以高保真 Markdown 格式瞬间新建笔记，自动携带完整 Frontmatter 元数据！
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-title-wrap">
+        <div class="section-tag">FAQ</div>
+        <h2 class="section-title">常见问题解答</h2>
+      </div>
+
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h4>Q: 导出的 Markdown 文件包含哪些元数据？</h4>
+          <p>每篇导出的文档顶部均包含标准的 YAML Frontmatter，涵盖标题（title）、作者（author）、原文直链（url）、采集时间（date）、知乎标签（tags）以及点赞数（upvotes）等结构化信息。</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Q: 为什么专栏文章能完全去除无关推荐内容？</h4>
+          <p>知集深度适配了知乎专栏真实 DOM 树，将作用域严格锚定在 <code>&lt;article class="Post-Main"&gt;</code> 容器内，彻底剔除了推荐阅读、热搜词、侧边栏等与正文无关的外层杂质。</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Q: 采集评论需要很长时间吗？</h4>
+          <p>知集默认按当前最佳排序平滑滚动抓取评论，抓取速度极快（通常 1~2 秒内抓完数十条）。您也可以在设置面板中自定义最大抓取评论数（支持 0~500 条），若设为 0 则直接跳过评论。</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Q: 扩展会上传我的知乎账号或浏览数据吗？</h4>
+          <p>绝无可能。知集 100% 运行于您的浏览器本地沙箱中，零远程代码、零分析打点、零隐私追踪，所有数据与图片直接在您的本地内存与磁盘中流转，代码已完全开源以供审查。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <ul class="footer-links">
+        <li><a href="https://github.com/phpgao/zhiji" target="_blank">GitHub 仓库</a></li>
+        <li><a href="https://github.com/phpgao/zhiji/releases" target="_blank">版本发布</a></li>
+        <li><a href="https://github.com/phpgao/zhiji/issues" target="_blank">提交反馈 / Issue</a></li>
+        <li><a href="https://raw.githubusercontent.com/phpgao/zhiji/main/LICENSE" target="_blank">MIT License</a></li>
+      </ul>
+      <p>© 2026 知集 (ZhiJi) · 基于 MIT 协议开源 · 为纯粹的知识沉淀与效率而生</p>
+    </div>
+  </footer>
+
+  <script>
+    function switchTab(index) {
+      const btns = document.querySelectorAll('.tab-btn');
+      const tabs = document.querySelectorAll('.tab-content');
+      btns.forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+      tabs.forEach((tab, i) => {
+        tab.classList.toggle('active', i === index);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+name: Build & Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Test, Build & Package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run automated test suite
+        run: npm test
+
+      - name: Build Chrome MV3 Extension, Userscript & Docs
+        run: npm run build
+
+      - name: Package distribution archives
+        run: npm run pack
+
+      - name: Upload build artifacts to GitHub Actions
+        uses: actions/upload-artifact@v7
+        with:
+          name: zhiji-release-packages
+          path: |
+            dist/*.zip
+            zhiji.user.js
+          retention-days: 30
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            dist/zhiji-chrome-*.zip
+            dist/zhiji-chrome.zip
+            zhiji.user.js
+            dist/zhiji-source-*.zip
+          generate_release_notes: true
