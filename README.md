@@ -11,15 +11,17 @@
 
 <p align="center">
   <a href="https://phpgao.github.io/zhiji/"><img src="https://img.shields.io/badge/GitHub%20Pages-官方主页与演示-3B82F6?style=flat&logo=github" alt="GitHub Pages"></a>
-  <a href="https://github.com/phpgao/zhiji/releases/tag/v1.1.0"><img src="https://img.shields.io/badge/Release-v1.1.0-blue.svg" alt="Release"></a>
+  <a href="https://chromewebstore.google.com/detail/hahlmfehfnhebnpmgmjbbomgjghnmjnk?authuser=0&hl=zh-CN"><img src="https://img.shields.io/badge/Chrome%20Web%20Store-官方商店安装-4285F4?style=flat&logo=googlechrome&logoColor=white" alt="Chrome Web Store"></a>
+  <a href="https://github.com/phpgao/zhiji/releases/latest"><img src="https://img.shields.io/github/v/release/phpgao/zhiji?color=blue&label=Release" alt="Release"></a>
   <img src="https://img.shields.io/badge/Manifest-V3-blue.svg" alt="Manifest V3">
   <img src="https://img.shields.io/badge/Tampermonkey-Userscript-00485B.svg" alt="Tampermonkey">
-  <img src="https://img.shields.io/badge/Tests-55%20passed-10b981.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-passing-10b981.svg" alt="Tests">
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT">
 </p>
 
 <p align="center">
-  🌐 <b>官方主页 & 在线功能演示</b>：<a href="https://phpgao.github.io/zhiji/">https://phpgao.github.io/zhiji/</a>
+  🌐 <b>官方主页 & 在线功能演示</b>：<a href="https://phpgao.github.io/zhiji/">https://phpgao.github.io/zhiji/</a><br>
+  🛒 <b>Chrome 商店直达</b>：<a href="https://chromewebstore.google.com/detail/hahlmfehfnhebnpmgmjbbomgjghnmjnk?authuser=0&hl=zh-CN">https://chromewebstore.google.com/detail/hahlmfehfnhebnpmgmjbbomgjghnmjnk</a>
 </p>
 
 ---
@@ -49,10 +51,13 @@
 
 ### 方式一：Chrome 浏览器扩展 (推荐)
 
-1. 前往 [Releases 发布页](https://github.com/phpgao/zhiji/releases/tag/v1.1.0) 下载最新安装包 `zhiji-chrome-v1.1.0.zip` 并解压；
-2. 打开 Chrome / Edge / Brave 浏览器，地址栏输入 `chrome://extensions/`；
-3. 打开右上角的 **「开发者模式」** 开关；
-4. 点击左上角 **「加载已解压的扩展程序」**，选择刚才解压出的目录即可。
+- **官方应用商店一键安装 (首选推荐)**：
+  👉 **[Chrome Web Store 官方页面安装「知集」](https://chromewebstore.google.com/detail/hahlmfehfnhebnpmgmjbbomgjghnmjnk?authuser=0&hl=zh-CN)**
+- **手动离线安装包 (开发者模式)**：
+  1. 前往 [Releases 最新发布页](https://github.com/phpgao/zhiji/releases/latest) 下载最新离线安装包 `zhiji-chrome.zip` 并解压；
+  2. 打开 Chrome / Edge / Brave 浏览器，地址栏输入 `chrome://extensions/`；
+  3. 打开右上角的 **「开发者模式」** 开关；
+  4. 点击左上角 **「加载已解压的扩展程序」**，选择解压出的目录即可。
 
 ### 方式二：Tampermonkey 油猴脚本 (一键安装)
 
@@ -115,18 +120,18 @@ related: []
 项目采用极速原生模块化设计，无重型打包器依赖：
 
 ```bash
-# 运行单元测试 (55 个自动化测试用例)
+# 运行单元测试
 npm test
 
 # 构建全端产物 (Chrome 扩展 dist/chrome, 油猴脚本 zhiji.user.js, Pages 静态资源)
 npm run build
 
-# 打包发布分发包 (dist/zhiji-chrome-v1.1.0.zip, dist/zhiji-source-v1.1.0.zip)
+# 打包发布分发包 (dist/zhiji-chrome.zip 等)
 npm run pack
 ```
 
 本项目已配置 **GitHub Actions 自动化 CI/CD**（`.github/workflows/build-and-release.yml`）：
-- 每次推送新版本 Tag（如 `v1.2.0`）会自动运行全套测试、打包构建并生成 GitHub Release 发布包；
+- 每次推送版本 Tag（`v*`）会自动运行全套测试、打包构建并生成 GitHub Release 发布包；
 - GitHub Pages 主页由 GitHub 原生托管引擎自动构建部署。
 
 ---
